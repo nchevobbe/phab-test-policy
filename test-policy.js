@@ -70,6 +70,13 @@ browser.runtime.onMessage.addListener(async function onBackgroundMessage(
     if (!select.querySelector("option[value='projectPHIDs']").disabled) {
       select.value = "projectPHIDs";
       select.dispatchEvent(new Event("change"));
+
+      setTimeout(() => {
+        const autocompleteEl = document.querySelector(".jx-tokenizer-input");
+        autocompleteEl.focus();
+        autocompleteEl.value = "testing-";
+        autocompleteEl.dispatchEvent(new Event("keydown"));
+      }, 10);
     }
   } else if (missingPolicyEl) {
     missingPolicyEl.remove();
