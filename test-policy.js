@@ -31,13 +31,25 @@ browser.runtime.onMessage.addListener(async function onBackgroundMessage(
 ) {
   const isAccepted = request.some((data) => data.type === TYPES.ACCEPT);
   const testingPolicyProjectIds = await projectTagsIdsPromise;
-  const hasTestingPolicyProjectTag = request
-    .filter((data) => data.type === TYPES.PROJECT_TAG)
-    .some((data) =>
-      data.value.some((projectId) =>
-        testingPolicyProjectIds.includes(projectId)
+
+  // We need to check either the tag was added by the current session (which should be
+  // reflected in the request object), or if already existed before this session (which
+  // we do by checking if a testing tag is in the DOM).
+  const hasTestingPolicyProjectTag =
+    request
+      .filter((data) => data.type === TYPES.PROJECT_TAG)
+      .some((data) =>
+        data.value.some((projectId) =>
+          testingPolicyProjectIds.includes(projectId)
+        )
+      ) ||
+    Array.from(
+      document.querySelectorAll(
+        ".phabricator-handle-tag-list-item .phui-tag-core"
       )
-    );
+    )
+      .map((e) => e.textContent)
+      .some((t) => t.startsWith("testing-"));
 
   const container = document.querySelector(".phui-form-view");
   const actionBar = container.querySelector(".phui-comment-action-bar");
