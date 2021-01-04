@@ -15,13 +15,7 @@ browser.webRequest.onBeforeRequest.addListener(
       return;
     }
 
-    const tabs = await browser.tabs.query({
-      url: details.originUrl,
-    });
-
-    for (const tab of tabs) {
-      browser.tabs.sendMessage(tab.id, actionData);
-    }
+    browser.tabs.sendMessage(details.tabId, actionData);
   },
   {
     urls: WATCHED_URLS,
