@@ -4,13 +4,18 @@ const TYPES = {
 };
 const ACCEPT_TYPE = "accept";
 
+const TAGS_REQUIRING_COMMENTS = new Set([
+  "testing-exception-elsewhere",
+  "testing-exception-other",
+]);
+
 const projectTagsData = Array.from(
   document.querySelectorAll("data[data-javelin-init-kind=behaviors]")
 )
   .map((d) => JSON.parse(d.getAttribute("data-javelin-init-data")))
   .find((data) => data["comment-actions"])
-  ?.["comment-actions"].find(({ actions }) => actions?.projectPHIDs)?.actions
-  ?.projectPHIDs;
+  ?.["comment-actions"].find(({ actions }) => actions?.projectPHIDs)
+  ?.actions?.projectPHIDs;
 
 // We don't have access to the project tag label directly, so we need to retrieve their ids
 // We re-use the URL that the project tag autocomplete is using (using Phabricator API requires a token).
@@ -136,4 +141,37 @@ browser.runtime.onMessage.addListener(async function onBackgroundMessage(
   } else if (missingPolicyEl) {
     missingPolicyEl.remove();
   }
+});
+
+// We want to add a stylized comment when the user selects a tag which needs an explanation
+const bottomForm = document.querySelector(".phui-comment-form-view");
+// Click event is intercepted at another level
+bottomForm.addEventListener("mousedown", (e) => {
+  const autocompleteItem = e.target.closest(".jx-result");
+
+  if (!autocompleteItem) {
+    return;
+  }
+
+  const name = autocompleteItem.getAttribute("name").split(" ")[0];
+  if (!TAGS_REQUIRING_COMMENTS.has(name)) {
+    return;
+  }
+
+  const textAreaEl = document.querySelector(
+    ".phui-comment-form-view textarea.remarkup-assist-textarea"
+  );
+
+  const commentLabel = `{nav, icon=tags, name=${name}}: `;
+  if (textAreaEl.value.includes(commentLabel)) {
+    return;
+  }
+
+  textAreaEl.value += `\n\n${commentLabel}`;
+  // We need to wait a bit to focus the textarea, otherwise the focus
+  // will be set back to the project input
+  setTimeout(() => {
+    textAreaEl.focus();
+    textAreaEl.selectionStart = textAreaEl.value.length;
+  }, 100);
 });
