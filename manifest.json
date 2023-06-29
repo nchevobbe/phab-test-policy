@@ -2,7 +2,7 @@
   "description": "Adding Test Policy UI to Phabricator",
   "manifest_version": 2,
   "name": "phab-test-policy",
-  "version": "1.5",
+  "version": "1.6",
   "homepage_url": "https://github.com/nchevobbe/phab-test-policy",
   "icons": {},
   "permissions": [
