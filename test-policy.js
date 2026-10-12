@@ -17,6 +17,14 @@ const projectTagsData = Array.from(
   ?.["comment-actions"].find(({ actions }) => actions?.projectPHIDs)
   ?.actions?.projectPHIDs;
 
+const isUplift =
+  !!document.querySelector(
+    ".phui-status-list-view a[href='/tag/release-managers/']"
+  ) &&
+  !document.querySelector(
+    ".phui-property-list-value a[href='/source/firefox-autoland/']"
+  );
+
 // We don't have access to the project tag label directly, so we need to retrieve their ids
 // We re-use the URL that the project tag autocomplete is using (using Phabricator API requires a token).
 const src =
@@ -57,6 +65,10 @@ var projectTagsIdsPromise = fetch(
 browser.runtime.onMessage.addListener(async function onBackgroundMessage(
   request
 ) {
+  if (isUplift) {
+    return;
+  }
+
   const isAccepted = request.some((data) => data.type === TYPES.ACCEPT);
   const testingPolicyProjectIds = await projectTagsIdsPromise;
 
